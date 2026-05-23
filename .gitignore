@@ -1,0 +1,9 @@
+.DS_Store
+.idea/
+
+# committed: .env.development.* (local docker creds only)
+# ignored: anything that might hold real secrets
+.env
+.env.local
+.env.production
+.env.*.local
