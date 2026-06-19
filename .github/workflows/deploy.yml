@@ -8,19 +8,37 @@ jobs:
   checks:
     uses: ./.github/workflows/pr-check.yml
 
-  deploy:
-    needs: checks
+  build:
+    needs: [checks]
     runs-on: ubuntu-latest
-
     steps:
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /var/www/myapp/backend
-            git pull origin main
-            cd /var/www/myapp
-            docker compose up --build -d backend
+      - uses: actions/checkout@v4
+
+      - name: Вход в докер хаб
+        run: docker login -u ${{ secrets.DOCKER_USER }} -p ${{ secrets.DOCKER_PASS }}
+
+      - name: Build and Push образа
+        env:
+          IMAGE_SHA: ${{ secrets.DOCKER_USER }}/backend:sha-${{ github.sha }}
+          IMAGE_LATEST: ${{ secrets.DOCKER_USER }}/backend:latest
+        run: |
+          docker build -t $IMAGE_SHA -t $IMAGE_LATEST .
+          docker push $IMAGE_SHA
+          docker push $IMAGE_LATEST
+
+  # deploy:
+  # needs: checks
+  # runs-on: ubuntu-latest
+
+  # steps:
+  #   - name: Deploy via SSH
+  #     uses: appleboy/ssh-action@v1.0.3
+  #     with:
+  #       host: ${{ secrets.SSH_HOST }}
+  #       username: ${{ secrets.SSH_USER }}
+  #       key: ${{ secrets.SSH_PRIVATE_KEY }}
+  #       script: |
+  #         cd /var/www/myapp/backend
+  #         git pull origin main
+  #         cd /var/www/myapp
+  #         docker compose up --build -d backend
