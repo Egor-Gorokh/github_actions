@@ -12,7 +12,7 @@ jobs:
     needs: [checks]
     runs-on: ubuntu-latest
     outputs:
-      image_sha: ${{ steps.build.push.outputs.image_sha }}
+      image_sha: ${{ steps.build-push.outputs.image_sha }}
     steps:
       - uses: actions/checkout@v4
 
@@ -34,9 +34,6 @@ jobs:
     needs: [build]
     runs-on: ubuntu-latest
     steps:
-      - name: Debug
-        run: echo "image_sha=${{ needs.build.outputs.image_sha }}"
-
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -46,6 +43,14 @@ jobs:
           script: |
             cd /var/www/myapp
 
-            sed i "s|DOCKER_IMAGE=.*|DOCKER_IMAGE=${{ needs.build.outputs.image_sha }}|".env
+            # Правильная замена строки в .env
+            sed -i.bak "s|DOCKER_IMAGE=.*|DOCKER_IMAGE=${{ needs.build.outputs.image_sha }}|" .env
 
+            # Подтянуть новый образ
+            docker compose pull backend
+
+            # Перезапустить бекенд
             docker compose up -d --no-deps backend
+
+            # Очистить старые образы
+            docker image prune -f
