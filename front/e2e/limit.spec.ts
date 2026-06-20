@@ -14,9 +14,10 @@ test('rejects creation when maxTodos limit is reached', async () => {
   const ctx = await request.newContext({ baseURL: API });
 
   for (let i = 1; i <= 5; i++) {
-    const res = await ctx.post('/todos', { data: { title: `todo ${i}` } });
-    expect(res.status(), `creating todo #${i} should succeed`).toBe(201);
-  }
+  const res = await ctx.post('/todos', { data: { title: `todo ${i}` } });
+  expect(res.status(), `creating todo #${i} should succeed`).toBe(201);
+  await new Promise(resolve => setTimeout(resolve, 100)); // задержка 100ms
+}
 
   const overflow = await ctx.post('/todos', { data: { title: 'overflow' } });
   expect(overflow.status()).toBe(400);
