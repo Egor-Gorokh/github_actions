@@ -59,7 +59,8 @@ jobs:
 
             grep -q '^DOCKERHUB_USERNAME=' .env.development.compose || echo "DOCKERHUB_USERNAME=${{ vars.DOCKER_USER }}" >> .env.development.compose
 
-            sed -i "s|^APP_VERSION=.*|APP_VERSION=sha-${{ github.sha }}|" .env.development.compose
+            sed -i "s|^APP_VERSION=.*|APP_VERSION=${{ github.sha }}|" .env.development.compose
+
             docker compose --env-file .env.development.compose pull back front
             docker compose --env-file .env.development.compose up -d --no-deps back front
 
@@ -102,7 +103,7 @@ jobs:
           elif [ "$VERIFY" != "success" ]; then
             TEXT="❌ Smoke не прошёл (задеплоено, но не отвечает корректно)%0A${{ github.repository }} @ ${{ github.ref_name }}%0A${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
           else
-            TEXT="✅ Деплой успешен%0A${{ github.repository }} @ ${{ github.ref_name }}%0AActor: ${{ github.actor }}%0AVersion: sha-${{ github.sha }}"
+            TEXT="✅ Деплой успешен%0A${{ github.repository }} @ ${{ github.ref_name }}%0AActor: ${{ github.actor }}%0AVersion: ${{ github.sha }}"
           fi
 
           RESPONSE=$(curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
