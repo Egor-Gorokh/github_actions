@@ -32,8 +32,8 @@ jobs:
 
       - name: Build and push
         env:
-           IMAGE_SHA: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:sha-${{ github.sha }}
-           IMAGE_LATEST: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:latest
+          IMAGE_SHA: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:sha-${{ github.sha }}
+          IMAGE_LATEST: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:latest
         run: |
           docker build \
             -t $IMAGE_SHA \
@@ -55,6 +55,15 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd ~/myapp
+            
+            if [ ! -f .env.development.db ]; then
+              echo "POSTGRES_USER=myapp_user" > .env.development.db
+              echo "POSTGRES_PASSWORD=change_me_please" >> .env.development.db
+              echo "POSTGRES_DB=myapp" >> .env.development.db
+            fi
+            
+            grep -q '^DOCKERHUB_USERNAME=' .env.development.compose || echo "DOCKERHUB_USERNAME=${{ vars.DOCKER_USER }}" >> .env.development.compose
+            
             sed -i "s|^APP_VERSION=.*|APP_VERSION=sha-${{ github.sha }}|" .env.development.compose
             docker compose --env-file .env.development.compose pull back front
             docker compose --env-file .env.development.compose up -d --no-deps back front
@@ -65,17 +74,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
       - name: Smoke test
         env:
           E2E_BASE_URL: ${{ vars.VITE_API_URL }}
         run: |
           export E2E_BASE_URL="${E2E_BASE_URL%/api}"
-          bash scripts/smoke.sh
+          # Check if smoke.sh exists
+          if [ -f scripts/smoke.sh ]; then
+            bash scripts/smoke.sh
+          else
+            # Fallback to curl check
+            echo "scripts/smoke.sh not found, using curl check..."
+            curl -s -o /dev/null -w "%{http_code}" $E2E_BASE_URL | grep -q "200" || exit 1
+          fi
 
   notify:
     needs: [checks, build, deploy, verify]

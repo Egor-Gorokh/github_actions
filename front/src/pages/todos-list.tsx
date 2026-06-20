@@ -49,7 +49,7 @@ export function TodosListPage() {
       >
         <div className="flex-1">
           <Input
-            placeholder="What needs to be done 5?"
+            placeholder="What needs to be done 6?"
             disabled={createTodo.isPending}
             data-testid="create-title"
             {...form.register('title')}
