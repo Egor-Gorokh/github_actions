@@ -9,9 +9,10 @@
 
 services:
   db:
+    image: postgres:16-alpine     # не трогаем — это не наш образ
+    restart: unless-stopped  
     env_file:
-      - .env.development.db  
-    image: postgres:16-alpine
+      - .env.development.db 
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -41,7 +42,10 @@ services:
     #     попыток до признания unhealthy, сколько ждать перед самой первой проверкой
 
   back:
-    image: ${DOCKERHUB_USERNAME}/todo-back:${IMAGE_TAG}
+    image: ${DOCKERHUB_USERNAME}/todo-back:${APP_VERSION}
+    restart: unless-stopped       # ← перезапускать при сбое и при ребуте VPS
+    environment:
+      APP_VERSION: ${APP_VERSION} 
     depends_on:
       db:
         condition: service_healthy
@@ -66,7 +70,8 @@ services:
     #     не мог изменить файл на хосте
 
   front:
-    image: ${DOCKERHUB_USERNAME}/todo-front:${IMAGE_TAG} 
+    image: ${DOCKERHUB_USERNAME}/todo-front:${APP_VERSION}
+    restart: unless-stopped
   #  build:
  #     context: ./front
   #    args:
