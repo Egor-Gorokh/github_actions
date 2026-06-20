@@ -9,20 +9,22 @@
 
 services:
   db:
-    image: postgres:16-alpine     # не трогаем — это не наш образ
-    restart: unless-stopped  
-    env_file:
-      - .env.development.db 
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "$${POSTGRES_USER}", "-d", "$${POSTGRES_DB}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    ports:
-      - "15432:5432"
+  image: postgres:16-alpine
+  restart: unless-stopped
+  environment:
+    POSTGRES_USER: myapp_user
+    POSTGRES_PASSWORD: change_me_please
+    POSTGRES_DB: myapp
+  volumes:
+    - pgdata:/var/lib/postgresql/data
+  healthcheck:
+    test: ["CMD", "pg_isready", "-U", "myapp_user", "-d", "myapp"]
+    interval: 10s
+    timeout: 5s
+    retries: 5
+    start_period: 10s
+  ports:
+    - "15432:5432"
       
 
 
