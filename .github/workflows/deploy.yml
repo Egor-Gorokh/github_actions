@@ -32,8 +32,8 @@ jobs:
 
       - name: Build and push
         env:
-          IMAGE_SHA: ${{ vars.DOCKER_USER }}/${{ matrix.service }}:sha-${{ github.sha }}
-          IMAGE_LATEST: ${{ vars.DOCKER_USER }}/${{ matrix.service }}:latest
+           IMAGE_SHA: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:sha-${{ github.sha }}
+           IMAGE_LATEST: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:latest
         run: |
           docker build \
             -t $IMAGE_SHA \
