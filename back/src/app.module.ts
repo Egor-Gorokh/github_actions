@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { TodosModule } from './todos/todos.module';
 import { Todo } from './todos/todo.entity';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module'; // ← импорт
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HealthModule } from './health/health.module';
     }),
     TodosModule,
     HealthModule,
+    MetricsModule, // ← добавлено
   ],
 })
 export class AppModule {}
