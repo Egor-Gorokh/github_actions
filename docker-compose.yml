@@ -23,10 +23,10 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    networks:
-      - app-network
     ports:
       - "15432:5432"
+    networks:
+      - app-network  
 
   back:
     image: ${DOCKERHUB_USERNAME}/todo-back:${APP_VERSION}
@@ -42,6 +42,8 @@ services:
       - "13000:3000"
     volumes:
       - ./app-config:/app/config:ro
+    networks:
+      - app-network
 
   front:
     image: ${DOCKERHUB_USERNAME}/todo-front:${APP_VERSION}
@@ -51,6 +53,7 @@ services:
     depends_on:
       back:
         condition: service_started
-
+    networks:
+      - app-network
 volumes:
   pgdata:
