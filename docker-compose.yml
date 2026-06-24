@@ -26,7 +26,7 @@ services:
     ports:
       - "15432:5432"
     networks:
-      - app-network  
+      - app-network
 
   back:
     image: ${DOCKERHUB_USERNAME}/todo-back:${APP_VERSION}
@@ -55,5 +55,42 @@ services:
         condition: service_started
     networks:
       - app-network
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'
+    restart: unless-stopped
+    networks:
+      - app-network
+
 volumes:
   pgdata:
+  prometheus_data:
+
+networks:
+  app-network:
+    driver: bridge
