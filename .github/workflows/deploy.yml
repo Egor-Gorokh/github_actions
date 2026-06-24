@@ -59,10 +59,9 @@ jobs:
 
             grep -q '^DOCKERHUB_USERNAME=' .env.development.compose || echo "DOCKERHUB_USERNAME=${{ vars.DOCKER_USER }}" >> .env.development.compose
 
-            # Убрал "sha-" — теперь используем чистый SHA, как в теге образа
             sed -i "s|^APP_VERSION=.*|APP_VERSION=${{ github.sha }}|" .env.development.compose
             docker compose --env-file .env.development.compose pull back front
-            docker compose --env-file .env.development.compose up -d --no-deps back front
+            docker compose --env-file .env.development.compose up -d back front   # <-- УБРАЛ --no-deps
 
   verify:
     needs: [deploy]
